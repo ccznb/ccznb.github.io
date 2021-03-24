@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-chrf" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/03/24/chrf/" class="article-date">
+  <time class="dt-published" datetime="2021-03-24T10:45:09.000Z" itemprop="datePublished">2021-03-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/03/24/chrf/">NLG评估指标chrF、chrF++介绍</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        </font>
+
+<p>@<a href="%E6%96%87%E7%AB%A0%E7%9B%AE%E5%BD%95">TOC</a></p>
+<hr style=" border:solid; width:100px; height:1px;" color=#000000 size=1">
+
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p><font color=#999AAA >最近在帮忙做文本生成方面的内容，发现想要用的CHRF和CHRF++指标的资料很少或者不全。就去翻了一下论文，就来写一下自己对论文的总结和理解吧，如有错误还请帮忙指正。文章最后面会放实现代码和论文链接。</p>
+<hr style=" border:solid; width:100px; height:1px;" color=#000000 size=1">
+
+
+
+<h1 id="一、CHRF"><a href="#一、CHRF" class="headerlink" title="一、CHRF"></a>一、CHRF</h1><p><font color=#999AAA >这个方法比较新，我找到的论文是2015年的。所以网上资料不多。建议如果不了解【BLEU】的话建议先去找篇博客大概看一下，网上很多。然后在了解的基础上，才能更好理解chrF。</p>
+<p>论文解读：</p>
+<h2 id="1-基础"><a href="#1-基础" class="headerlink" title="1. 基础"></a>1. 基础</h2><ul>
+<li>CHRF和BLEU类指标的最大不同之处在于，BLEU是单词级的，CHRF是字符级的，也就是基于字符n-gram计算的。</li>
+<li>通用的公式：<br>$$<br>chrF\beta = (1+\beta ^{2}) \frac{chrP·chrR}{\beta ^{2}·chrP+chrR}<br>$$<br>其中：</li>
+</ul>
+<ol>
+<li>chrP是精确度（查准率），就是候选文和参考文匹配的字符级n-gram在候选文中占的比例。</li>
+<li>chrR是召唤率（查全率），就是候选文和参考文匹配的字符级n-gram在参考文中占的比例。</li>
+</ol>
+<ul>
+<li>那么当β=1时就是CHRF，当β=2时就是CHRF2，当β=3时就是CHRF3。论文当中使用的是β=3来做实验，而且并没说明为什么用3，只是一个初始值。论文最后也有提到应该多对β的值做做后续研究，以便改良。</li>
+</ul>
+<h2 id="2-实验"><a href="#2-实验" class="headerlink" title="2. 实验"></a>2. 实验</h2><ul>
+<li>实验数据集为对WMT12, WMT13 以及WMT14。</li>
+<li>实验对CHRF和CHRF3以及WORDF对比BLEU、TER、METEOR等标准方法，发现CHRF3的表现最好。</li>
+</ul>
+<h1 id="二、CHRF"><a href="#二、CHRF" class="headerlink" title="二、CHRF++"></a>二、CHRF++</h1><p><font color=#999AAA >CHRF++其实就是CHRF的改进，所以就更新了，论文是在2017年发表的。而且和CHRF的是同一个作者。</p>
+<p>论文解读：</p>
+<ul>
+<li>论文开头提到别人研究过β最好为2，这一点论文后面也实验确认过。</li>
+<li>CHRF++其实和CHRF差不多。但是CHRF++是字符级和单词级都用到了，然后算一个平均值。</li>
+<li>论文中提到别人研究过字符级n-gram的n最好不要超过6，单词级n-gram的n最好不要超过4。</li>
+<li>CHRF++的字符级n-gram的n最好是6，单词级n-gram的n最好是1或2。</li>
+</ul>
+<h1 id="三、代码实现以及论文链接"><a href="#三、代码实现以及论文链接" class="headerlink" title="三、代码实现以及论文链接"></a>三、代码实现以及论文链接</h1><ol>
+<li><p>CHRF：</p>
+ <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">nltk.translate.chrf_score <span class="comment">#在这个包中有好几个计算CHRF的函数</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;下面是包内函数&#x27;&#x27;&#x27;</span></span><br><span class="line">nltk.translate.chrf_score.sentence_chrf <span class="comment">#这个函数是实现的论文的</span></span><br><span class="line">nltk.translate.chrf_score.chrf_precision_recall_fscore_support </span><br><span class="line">nltk.translate.chrf_score.corpus_chrf </span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;具体使用看函数介绍或者文档吧&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;推荐文档地址:http://www.nltk.org/api/nltk.translate.html?highlight=chrf#module-nltk.translate.chrf_score&#x27;&#x27;&#x27;</span></span><br></pre></td></tr></table></figure>
+<p> <a target="_blank" rel="noopener" href="https://www.aclweb.org/anthology/W15-30.pdf">论文链接</a></p>
+</li>
+<li><p>CHRF++<br> <a target="_blank" rel="noopener" href="https://github.com/m-popovic/chrF.">论文给的实现代码链接</a><br> <a target="_blank" rel="noopener" href="https://www.aclweb.org/anthology/W17-4770.pdf">论文链接</a></p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/03/24/chrf/" data-id="ckmnboe4a000292j2bbft5r4z" data-title="NLG评估指标chrF、chrF++介绍" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-NLG评估指标chrF、chrF-介绍" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/03/24/NLG%E8%AF%84%E4%BC%B0%E6%8C%87%E6%A0%87chrF%E3%80%81chrF-%E4%BB%8B%E7%BB%8D/" class="article-date">
+  <time class="dt-published" datetime="2021-03-24T10:38:24.000Z" itemprop="datePublished">2021-03-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/03/24/NLG%E8%AF%84%E4%BC%B0%E6%8C%87%E6%A0%87chrF%E3%80%81chrF-%E4%BB%8B%E7%BB%8D/">NLG评估指标chrF、chrF++介绍</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/03/24/NLG%E8%AF%84%E4%BC%B0%E6%8C%87%E6%A0%87chrF%E3%80%81chrF-%E4%BB%8B%E7%BB%8D/" data-id="ckmnboe48000192j20uot90il" data-title="NLG评估指标chrF、chrF++介绍" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-CCF" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/03/24/CCF/" class="article-date">
+  <time class="dt-published" datetime="2021-03-24T10:36:47.000Z" itemprop="datePublished">2021-03-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/03/24/CCF/">CCF大数据比赛--severless工作负载预测  0.33分方案分享</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>@<a href="%E6%96%87%E7%AB%A0%E7%9B%AE%E5%BD%95">TOC</a></p>
+<hr style=" border:solid; width:100px; height:1px;" color=#000000 size=1">
+
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p><strong>最后结果</strong>：<br>0.33743155分/46名（A榜） 0.33025664分/45名（B榜）<br><font color=#999AAA >线上赛也已经结束很久了，就打算来分享一下自己的想法吧。因为课程要求第一次打这种数据科学类的竞赛，此前也没什么相关的知识储备。基本都是基于zhengheng大哥提供的baseline进行修改而成，后面都是个人的想法，想到什么就做了什么，如有不对轻喷。<br></font></p>
+<h1 id="赛题简述"><a href="#赛题简述" class="headerlink" title="赛题简述"></a>赛题简述</h1><p><font color=#999AAA ><a target="_blank" rel="noopener" href="https://www.datafountain.cn/special/BDCI2020/competition">大赛网址</a><br><strong>背景</strong>：云计算时代，Serverless软件架构可根据业务工作负载进行弹性资源调整，这种方式可以有效减少资源在空闲期的浪费以及在繁忙期的业务过载，同时给用户带来极致的性价比服务。在弹性资源调度的背后，对工作负载的预测是一个重要环节。如何快速感知业务的坡峰波谷，是一个实用的Serverless服务应该考虑的问题。<br><strong>任务</strong>：传统的资源控制系统以阈值为决策依据，只关注当前监控点的取值，缺少对历史数据以及工作负载趋势的把控，不能提前做好资源的调整，具有很长的滞后性。近年来，随着企业不断上云，云环境的工作负载预测成为一个经典且极具挑战的难题。<br><img src="https://img-blog.csdnimg.cn/2020122103201580.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzY0NzEyMA==,size_16,color_FFFFFF,t_70" alt="参考图片"></p>
+</font>
+
+<p>简单的说就是给你过去五个时间点的服务器资源使用情况和提交到服务器上的job的情况，让你预测接下来五个时间点的CPU使用率和排队中的job数。</p>
+<hr style=" border:solid; width:100px; height:1px;" color=#000000 size=1">
+
+<font color=#999AAA >
+
+<h1 id="一、赛题理解"><a href="#一、赛题理解" class="headerlink" title="一、赛题理解"></a>一、赛题理解</h1><ul>
+<li>赛题难点就在于上面那张图，到了某个点后接下来的趋势到底是怎样的？继续上升还是下降还是保持平稳。</li>
+<li>这道赛题让我们用过去五个点预测接下来五个点，按道理时序模型里面越近的时间点对当前时间点的预测意义越重，那么这里只有五个的话其实很难单个拎出来说哪个点的意义更大。</li>
+<li>一上来我先交了五个时间点CPU使用率和排队job数的平均值、最大值、最小值、中位数、最小三个数的平均值，其中平均值分数0.08左右，最小三个数的平均值分数在0.11左右，有一个忘记了，最高是0.12的。从这里还有评价指标可以看出，其实直接用平均值这些统计值对于预测意义已经不错了，像我最高分是在0.33，将近0.34，这个分数对比0.12算出来的精度其实就差几个百分点。</li>
+<li>根据很多大佬的言论以及我的总结觉得对于排队中的job数的预测过于玄学，而且占比不大，主战场还是CPU使用率，所以我后面的分享基本都是基于如何预测CPU使用率的。</li>
+</ul>
+<h1 id="二、数据分析"><a href="#二、数据分析" class="headerlink" title="二、数据分析"></a>二、数据分析</h1><h2 id="1-excel分析"><a href="#1-excel分析" class="headerlink" title="1.excel分析"></a>1.excel分析</h2><ul>
+<li>训练集数据间时间间隔基本都不是5分钟的，但大多数还是在3-30分钟内。其中极值甚至可以上千分钟。但训练集是严格5分钟的。</li>
+<li>训练集存在缺失值的情况，比如磁盘使用率，但是缺失值也不是很多。</li>
+<li>训练集里面很多队列在测试集都没出现的。</li>
+<li>测试集的大概15000条样本中光是297号队列就占了5710条，其次是21487和85153号队列，分别占了2235和1950条，记起来将近2/3。所以对这几个队列的预测精度可谓是提分大头。</li>
+<li>测试集的日期做了脱敏处理。</li>
+</ul>
+<h2 id="2-python分析"><a href="#2-python分析" class="headerlink" title="2.python分析"></a>2.python分析</h2><ul>
+<li>做了折线图、散点图和条形图什么的最基本的统计图。可以看出其实大部分时候CPU的使用率都是偏低的，不管是平均值还是中位数基本都是在个位数。</li>
+<li>不同队列的分布相差较大，有的队列的CPU使用率基本都比一些其他队列大。</li>
+</ul>
+<h1 id="三、数据预处理"><a href="#三、数据预处理" class="headerlink" title="三、数据预处理"></a>三、数据预处理</h1><ul>
+<li>针对缺失值问题我采用了直接删掉对应样本和补0两种方法，两种方法效果差不多，大概有几个千分点的提分。</li>
+<li>针对时间间隔不均匀的问题，在构造训练集时我设置了一个阈值，当前后两个时间点的时间间隔大于这个阈值时自动丢弃这个样本（比如t1-t0&gt;阈值）,但这个是掉分操作。</li>
+<li>针对时间间隔不均匀的问题，我一个朋友做了插值处理后重采样。但结果是掉分的。原因我分析大概是插值后增大了误差，因为插值出来的数据可能过于不准确。</li>
+<li>时间转化为了y-m-d格式。</li>
+</ul>
+<h1 id="四、特征工程"><a href="#四、特征工程" class="headerlink" title="四、特征工程"></a>四、特征工程</h1><ul>
+<li>因为heng哥的baseline是每个队列都建立不同的模型，所以删除每个队列都有相同数据列很合理，其中有</li>
+<li>根据前面的作图我发现一天当中的不同时段CPU的使用率分布还是有很大区别的，所以加入了 （hour*60+min）的时间特征。事实证明这个提分非常大，几个百分点的提分，在前期让我直接坐上榜二的位置。</li>
+<li>根据鱼佬的baseline的灵感，加入了滑窗统计值和衰减统计值以及组合特征，基本都是掉分的。</li>
+</ul>
+<h1 id="五、模型"><a href="#五、模型" class="headerlink" title="五、模型"></a>五、模型</h1><ol>
+<li>选用模型：<br>用的模型就是heng哥baseline的lgb模型，没有什么特别之处。</li>
+<li>调参：<br>对树深和K折交叉的参数都调大了，大概是1-2个百分点的提升。</li>
+<li>模型融合时选用了xgboost和随机森林，分数分别在0.32和0.312。但是无论以加权平均数融合还是采用stacking融合都没有lgb单模高分（heng哥nb！），猜测原因是模型相似度太高且融合模型有点少。</li>
+</ol>
+<h1 id="六、后处理"><a href="#六、后处理" class="headerlink" title="六、后处理"></a>六、后处理</h1><ul>
+<li>因为测试集的分布和训练集不一致，测试集的CPU使用率偏高一点，所以我给结果整体加/乘上了一个小常数 ，使它更好的拟合测试集，感觉这其实是玄学做法，但是有几个千分点的提分。</li>
+<li>对于排队中的job数这个预测值，我直接采用平均值。结果比我模型预测的高将近1个百分点吧。</li>
+</ul>
+<h1 id="七、一些别的发现和思考"><a href="#七、一些别的发现和思考" class="headerlink" title="七、一些别的发现和思考"></a>七、一些别的发现和思考</h1><ul>
+<li>长时间上不了分后，我开始手动观察结果，发现我模型中的一些问题，比如我有一个很明显的误差很大的结果：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>测试集CPU使用率</th>
+<th>CPU使用率预测值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>85</td>
+<td>2</td>
+</tr>
+<tr>
+<td>85</td>
+<td>1</td>
+</tr>
+<tr>
+<td>91</td>
+<td>1</td>
+</tr>
+<tr>
+<td>91</td>
+<td>1</td>
+</tr>
+<tr>
+<td>90</td>
+<td>1</td>
+</tr>
+<tr>
+<td>这里很明显用肉眼都能观察出不合理，应该是过拟合导致，但是发现时已经是赛程末期，做了一下缓解过拟合的操作反而掉分了就放弃挣扎了。</td>
+<td></td>
+</tr>
+</tbody></table>
+<ul>
+<li>学业太忙一直没能把神经网络弄出来，结合一些大佬的言论，感觉应该是个上分点，有兴趣的可以试试。</li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这道赛题出的业务场景还是很不错的。虽然我第一眼看上去很简单，但是实际做起来却还是蛮有讲究的。当然对于我这个方案，不足之处和可改善之处还很多，等学习了前排方案后我再来改进一下自己的方案吧。</p>
+<h1 id="致谢"><a href="#致谢" class="headerlink" title="致谢"></a>致谢</h1><p>首先感谢zhengheng大哥的baseline，没有这份baseline，对于我这种菜鸟新手真的不知从何开始，真的感谢！然后感谢我的导师和我的师兄还有给我提供过思路的队友以及朋友们，你们的支持是我继续打下去的动力！<br>最后献上我的代码：<br><a target="_blank" rel="noopener" href="https://github.com/ccznb/CCF/tree/master">开源代码</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/03/24/CCF/" data-id="ckmnboe42000092j27otma706" data-title="CCF大数据比赛--severless工作负载预测  0.33分方案分享" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/03/24/hello-world/" class="article-date">
+  <time class="dt-published" datetime="2021-03-24T10:12:46.936Z" itemprop="datePublished">2021-03-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/03/24/hello-world/">Hello World</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/03/24/hello-world/" data-id="ckmnazcs80000l1j221v3206d" data-title="Hello World" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">March 2021</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2021/03/24/chrf/">NLG评估指标chrF、chrF++介绍</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/24/NLG%E8%AF%84%E4%BC%B0%E6%8C%87%E6%A0%87chrF%E3%80%81chrF-%E4%BB%8B%E7%BB%8D/">NLG评估指标chrF、chrF++介绍</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/24/CCF/">CCF大数据比赛--severless工作负载预测  0.33分方案分享</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/24/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2021 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
